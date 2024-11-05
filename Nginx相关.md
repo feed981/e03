@@ -1,5 +1,16 @@
 # Nginx相关
 
+## address already in use
+
+```bash
+sudo docker compose up -d
+Error response from daemon: driver failed programming external connectivity on endpoint nginx (b28ce2ae41212ec290559195c7e6c7e38bd377ecb5b1994d8f3908477dbc073d): Error starting userland proxy: listen tcp4 0.0.0.0:80: bind: address already in use
+
+sudo systemctl stop nginx
+sudo systemctl disable nginx
+sudo docker compose restart nginx
+```
+
 ## Vagrant 无法找到挂载 VirtualBox 共享文件夹
 
 ```bash 
@@ -61,7 +72,7 @@ vagrant up
 ```
 
 # 网站根目录挂载错误
-
+预期: /vagrant/nginx/html/app-web/index.html 而不是 /vagrant/nginx/html/index.html
 修改前
 ```bash
 sudo nano docker-compose.yml
@@ -98,3 +109,36 @@ sudo nano /vagrant/nginx/conf/nginx.conf
 ```bash
 sudo docker compose restart nginx
 ```
+
+# 转发问题
+
+```yml
+version: '3.5'
+
+services:
+  nacos:
+    networks:
+      - nacos_net
+
+  nginx:
+    networks:
+      - nacos_net
+
+
+networks:
+  nacos_net:
+    name: nacos_net
+```
+1. 因为 NGINX 在不同的 Docker 网络（如 nacos_net）中运行，不同网络的 Docker 容器之间可能需要特殊的配置或者 NAT 规则来实现通信。
+```bash
+# 在 NGINX 容器中使用 curl 测试连接
+sudo docker exec -it nginx /bin/sh
+/ # curl -X POST http://192.168.33.11:51601/user/api/v1/login/login_auth
+curl: (7) Failed to connect to 192.168.33.11 port 51601 after 0 ms: Could not connect to server
+
+/ # curl -X POST http://10.0.2.2:51601/user/api/v1/login/login_auth
+{"host":null,"code":503,"errorMessage":"服务器内部错误","data":null}/ # exit
+```
+- 宿主机没有绑定到 192.168.33.11，所以虚拟机访问宿主机上的服务时无法通过这个 IP 地址访问。
+- 10.0.2.2 是 Vagrant 专用，适合简单的宿主机访问
+由于 10.0.2.2 是一个默认的 NAT 配置 IP，Vagrant 自动管理其访问权限，所以它通常是最简单、最有效的宿主机访问方式。这样，你可以避免额外的网络配置，并且虚拟机可以直接访问到宿主机上的服务。
