@@ -73,7 +73,7 @@ vagrant halt
 vagrant up
 ```
 
-# 网站根目录挂载错误
+## 网站根目录挂载错误
 预期: /vagrant/nginx/html/app-web/index.html 而不是 /vagrant/nginx/html/index.html
 
 修改前
@@ -113,7 +113,7 @@ sudo nano /vagrant/nginx/conf/nginx.conf
 sudo docker compose restart nginx
 ```
 
-# 虚拟机直接访问到宿主机上的服务
+## 虚拟机直接访问到宿主机上的服务
 
 ```yml
 version: '3.5'
