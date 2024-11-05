@@ -5,7 +5,6 @@
 ```bash 
 vagrant reload
 
-...
 Vagrant was unable to mount VirtualBox shared folders. This is usually
 because the filesystem "vboxsf" is not available. This filesystem is
 made available via the VirtualBox Guest Additions and kernel module.
@@ -19,11 +18,13 @@ The error output from the command was:
 
 /sbin/mount.vboxsf: shared folder '/home/vagrant/vagrant' was not found (check VM settings / spelling)
 ```
+
 1. 共享文件夹设置不正确：在 Vagrantfile 中配置的共享文件夹可能存在拼写错误或路径问题。
 ```ruby
-#确保 Vagrantfile 中的路径和配置准确
+# 确保 Vagrantfile 中的路径和配置准确
 config.vm.synced_folder "D:/local/nginx", "/vagrant/nginx"
 ```
+
 2. VirtualBox Guest Additions 未正确安装：错误提示中提到的 vboxsf 文件系统是 VirtualBox Guest Additions 提供的。如果 Guest Additions 没有安装或未正确配置，系统将无法识别 vboxsf 文件系统
 
 ```bash
