@@ -50,7 +50,7 @@ services:
       - TZ=Asia/Shanghai
     volumes:
       - /vagrant/nginx/conf/nginx.conf:/etc/nginx/nginx.conf    # 主配置文件
-      - /vagrant/nginx/html:/usr/share/nginx/html       # 网站根目录
+      - /vagrant/nginx/html:/usr/share/nginx/html               # 网站根目录
       - /vagrant/nginx/log:/var/log/nginx                       # 日志文件目录
     networks:
       - nacos_net
