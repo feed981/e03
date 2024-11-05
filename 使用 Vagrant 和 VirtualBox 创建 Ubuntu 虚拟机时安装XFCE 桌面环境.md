@@ -1,8 +1,8 @@
-# 使用 Vagrant 和 VirtualBox 创建 Ubuntu 虚拟机时安装XFCE 桌面环境.md
+# 使用 Vagrant 和 VirtualBox 创建 Ubuntu 虚拟机时安装XFCE 桌面环境
 
 Vagrant 启动虚拟机时通常是在无头模式（headless mode），没有可视化的用户界面
 
-# Vagrantfile 启用图形用户界面（GUI）
+## Vagrantfile 启用图形用户界面（GUI）
 
 ```ruby
 Vagrant.configure("2") do |config|
@@ -23,7 +23,7 @@ end
 vagrant up
 ```
 
-# 安装桌面环境 XFCE 
+## 安装桌面环境 XFCE 
 
 ```bash
 # 更新软件包列表
@@ -36,15 +36,15 @@ sudo apt install xfce4 xfce4-goodies
 sudo apt install tightvncserver
 ```
 
-# 配置 VNC 服务器
+## 配置 VNC 服务器
 
-启动 VNC 服务器并设置密码
+1. 启动 VNC 服务器并设置密码
 ```
 vncserver
 ```
-将 ~/.vnc/xstartup 文件修改为以下内容，以便在启动 VNC 服务器时能够正确加载 XFCE 桌面环境
+2. 将 ~/.vnc/xstartup 文件修改为以下内容，以便在启动 VNC 服务器时能够正确加载 XFCE 桌面环境
 
-原本是
+修改前
 ```bash
 vagrant@ubuntu-bionic:~$ cat .vnc/xstartup
 #!/bin/sh
@@ -83,7 +83,7 @@ startxfce4 &
 #作用：这行命令用于启动系统的默认 X 会话，通常会加载系统配置的桌面环境。
 #是否保留：如果您使用 startxfce4 & 启动 XFCE 桌面环境，那么可以删除这一行，因为 startxfce4 已经会启动 XFCE 的所有必要组件。如果您希望使用其他桌面环境（如 GNOME），则可能需要保留这一行。
 ```
-设置可执行权限
+3. 设置可执行权限
 
 确保 xstartup 文件具有可执行权限
 
@@ -98,7 +98,7 @@ vncserver -kill :1
 vncserver :1
 ```
 
-通过在 Vagrantfile 中设置适当的端口转发规则，重启虚拟机并应用新的配置
+4. 通过在 Vagrantfile 中设置适当的端口转发规则，重启虚拟机并应用新的配置
 
 ```bash
 vagrant reload
@@ -106,15 +106,19 @@ vagrant ssh
 ```
 
 
-启动 VNC 服务器
+5. 启动 VNC 服务器
 ```bash
 vncserver :1
 ```
 
-# 连接到 VNC
+## 连接到 VNC
 
+1. 启动 VNC 服务器
+```
+vncserver
+```
 
-可以使用 VNC 客户端（如 TigerVNC、RealVNC 等）连接到虚拟机 
+2. 使用 VNC 客户端（如 TigerVNC、RealVNC 等）连接到虚拟机 
 
 https://www.realvnc.com/en/connect/download/viewer/
 
@@ -123,7 +127,7 @@ https://www.realvnc.com/en/connect/download/viewer/
 192.168.33.11:5901
 ```
 
-# 总结
+## 总结
 1. 需要手动启动 VNC 服务器：每次启动虚拟机后，您都需要手动运行 vncserver 命令来启动 VNC 服务。
 2. 确保配置正确：检查 xstartup 文件和其他配置，以确保能够成功加载桌面环境。
 3. 使用 VNC 客户端连接：通过客户端连接到虚拟机的指定端口。
