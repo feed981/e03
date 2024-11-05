@@ -1,10 +1,12 @@
 # Nginx相关
 
-## address already in use
+## 端口 80 被其他进程占用
 
 ```bash
 sudo docker compose up -d
-Error response from daemon: driver failed programming external connectivity on endpoint nginx (b28ce2ae41212ec290559195c7e6c7e38bd377ecb5b1994d8f3908477dbc073d): Error starting userland proxy: listen tcp4 0.0.0.0:80: bind: address already in use
+Error response from daemon: driver failed programming external connectivity on endpoint nginx
+(b28ce2ae41212ec290559195c7e6c7e38bd377ecb5b1994d8f3908477dbc073d):
+Error starting userland proxy: listen tcp4 0.0.0.0:80: bind: address already in use
 
 sudo systemctl stop nginx
 sudo systemctl disable nginx
@@ -73,6 +75,7 @@ vagrant up
 
 # 网站根目录挂载错误
 预期: /vagrant/nginx/html/app-web/index.html 而不是 /vagrant/nginx/html/index.html
+
 修改前
 ```bash
 sudo nano docker-compose.yml
@@ -110,7 +113,7 @@ sudo nano /vagrant/nginx/conf/nginx.conf
 sudo docker compose restart nginx
 ```
 
-# 转发问题
+# 虚拟机直接访问到宿主机上的服务
 
 ```yml
 version: '3.5'
@@ -142,3 +145,49 @@ curl: (7) Failed to connect to 192.168.33.11 port 51601 after 0 ms: Could not co
 - 宿主机没有绑定到 192.168.33.11，所以虚拟机访问宿主机上的服务时无法通过这个 IP 地址访问。
 - 10.0.2.2 是 Vagrant 专用，适合简单的宿主机访问
 由于 10.0.2.2 是一个默认的 NAT 配置 IP，Vagrant 自动管理其访问权限，所以它通常是最简单、最有效的宿主机访问方式。这样，你可以避免额外的网络配置，并且虚拟机可以直接访问到宿主机上的服务。
+
+
+```bash
+user nginx;
+#user www-data;
+worker_processes auto;
+
+events {
+    worker_connections 768;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    sendfile on;
+
+#    include  /vagrant/nginx/conf/leadnews.conf/*.conf;
+upstream  heima-app-gateway{
+  server 10.0.2.2:51601;
+#server 192.168.33.11:51601;
+}
+
+    server {
+        listen 80;
+        server_name localhost;
+
+
+        location / {
+            root /usr/share/nginx/html/app-web;
+            index index.html;
+            try_files $uri $uri/ =404;
+        }
+
+        location /app/ {
+                rewrite ^/app/(.*)$ /$1 break;  # 去掉 /app 前缀
+                proxy_pass http://heima-app-gateway;
+                proxy_set_header HOST $host;  # 不改变源请求头的值
+                proxy_pass_request_body on;  #开启获取请求体
+                proxy_pass_request_headers on;  #开启获取请求头
+                proxy_set_header X-Real-IP $remote_addr;   # 记录真实发出请求的客户端IP
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;  #记录代理信息
+        }
+    }
+}
+```
